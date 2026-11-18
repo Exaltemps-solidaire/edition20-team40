@@ -102,6 +102,7 @@
     - `frontend/src/app/fiche/page.tsx` : nouvel écran fiche demande (screen-3/4), lecture via `GET`, mise à jour via `PATCH`, statut devis désactivé pour une collectivité — sert les 3 critères.
     - `frontend/src/app/page.tsx` : lignes de la liste cliquables, ouvrent `/fiche?id=...` — sert le critère 1 (navigation vers la fiche).
     - `e2e/demo.spec.ts` : étape « j'ouvre une demande et je la fais avancer jusqu'à Devis signé ».
+  - **Correctif post-signalement** : le développeur a signalé un chargement infini de la fiche en cliquant depuis la liste (fonctionnait en rechargement direct de l'URL, pas en navigation cliente). Cause : `useState(() => window.location.search)` ne lisait l'URL qu'au tout premier montage ; lors d'une transition App Router, le composant montait avant que `window.location` soit mis à jour, `id` restait `null` et l'appel `GET /api/v1/demandes/:id` ne partait jamais. Corrigé avec `useSearchParams()` (réactif aux navigations), ce qui impose un `<Suspense>` autour du composant en export statique — conforme à `node_modules/next/dist/docs/01-app/03-api-reference/04-functions/use-search-params.md`. Reproduit et vérifié par un test Playwright jetable (navigation par clic, interception des appels `/api/*` vers le port 8081) avant et après le correctif ; image frontend reconstruite et redéployée ; `npm test` (8/8) et `verifier-deployabilite.sh` revérifiés. Commité séparément (`f6d9be6`), pas de nouveau signal PM Lab (même version 3, déploiement déjà mis à jour).
 
 ---
 
