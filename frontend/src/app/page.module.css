@@ -1,0 +1,164 @@
+.page {
+  --encre: #2b5672;
+  --bleu: #004c9a;
+  --rouge: #cf4b31;
+  --gris: #8f8f8f;
+  --gris-clair: #f2f4f6;
+  --gris-bordure: #d8dde2;
+
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  align-items: center;
+  background: #e8edf2;
+  min-height: 100vh;
+  font-family: var(--font-geist-sans), system-ui, sans-serif;
+}
+
+.screen {
+  width: 100%;
+  max-width: 420px;
+  background: #fff;
+  display: flex;
+  flex-direction: column;
+}
+
+.topbar {
+  background: var(--encre);
+  color: #fff;
+  padding: 16px 16px 12px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  position: sticky;
+  top: 0;
+}
+
+.topbarTitle {
+  font-size: 17px;
+  font-weight: 700;
+  flex: 1;
+}
+
+.topbarSub {
+  font-size: 12px;
+  font-weight: 400;
+  color: #b8cbdb;
+  display: block;
+  margin-top: 2px;
+}
+
+.topbarAction {
+  background: var(--rouge);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 8px 14px;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.content {
+  flex: 1;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.sectionTitle {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--gris);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 4px;
+}
+
+.demandList {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.demandRow {
+  background: #fff;
+  border: 1px solid var(--gris-bordure);
+  border-radius: 8px;
+  padding: 12px 14px;
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.demandRowOrg {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--encre);
+}
+
+.demandRowStep {
+  font-size: 12px;
+  color: var(--gris);
+  margin-top: 2px;
+}
+
+.demandRowStep strong {
+  color: var(--bleu);
+}
+
+.tag {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 12px;
+}
+
+.tagEntreprise {
+  background: #e3edf8;
+  color: var(--bleu);
+}
+
+.tagCollectivite {
+  background: #e9f5ee;
+  color: #2d7a4f;
+}
+
+.tagEcole {
+  background: #fff3e0;
+  color: #b85c00;
+}
+
+.tagAssociation {
+  background: #e3edf8;
+  color: var(--bleu);
+}
+
+.lienPipeline {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #e8edf2;
+  border: 1px solid var(--gris-bordure);
+  border-radius: 8px;
+  padding: 12px 14px;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--encre);
+}
+
+.lienPipelineSub {
+  font-size: 12px;
+  color: var(--gris);
+  font-weight: 400;
+  margin-top: 2px;
+}
+
+.etat {
+  padding: 24px 16px;
+  color: var(--gris);
+  font-size: 14px;
+}

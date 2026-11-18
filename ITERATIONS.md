@@ -1,0 +1,69 @@
+# Plan d'itérations — La Cloche, suivi des demandes de formation
+
+- **Plan validé le 2026-11-18** par le développeur.
+- **Source du plan** : proposé par l'agent, à partir de `passation/cadrage/6-plan-de-livraison.md` (le plan de livraison de l'équipe) et du prototype retenu (`passation/prototype/index.html`). L'équipe n'a pas déposé de plan d'itérations dans PM Lab (pas de fichier `cadrage/*iteration*`, pas de clé `iterations` dans `passation.json`).
+- **Temps restant annoncé** : ≥ 90 minutes, demandé le 2026-11-18 à 16:37. Reconfirmé à 40 minutes au début de l'itération 1 (2026-11-18, reprise de session) : la plateforme n'avait pas encore été démarrée, elle est relancée en tâche de fond pendant la vérification de la DoD.
+- **Durée d'un tour de test de l'équipe** : 5 minutes.
+- **Capacité d'une itération** : codage (≤10 min) + publication (~5 min) + tour de test (~5 min) ≈ 20 min. Sur ≥90 minutes, le plan ci-dessous tient large (6 itérations détaillées au fil de l'eau ≈ 2h au pire), avec de la marge pour un dépassement ou une itération de stabilisation finale. Le temps restant sera redemandé au début de chaque itération : ce découpage sera révisé s'il se réduit.
+- **Hors périmètre** (repris du PRD, `passation/cadrage/7-prd.md`) : rédaction du devis/facture, déclaration Qualiopi, inscription d'un particulier, noms des participants d'une sensibilisation sur devis, filtres autres que « par antenne » dans la vue Pipeline, connexion/comptes/mots de passe.
+
+⚠️ **Écart entre le PRD et le prototype, à trancher par les cadreurs** : le PRD (`7-prd.md`) décrit un écran « Qui êtes-vous ? » au lancement, avec un bouton pour changer de persona à tout moment. Le prototype retenu (`prototype/index.html`) ne montre pas cet écran : la topbar affiche un rôle fixe (« Sophie A. », responsable d'antenne Île-de-France), et l'accès à la vue direction se fait par un simple lien, pas par un changement de rôle. Comme la consigne est de reproduire le prototype sans le réinventer, ce plan **suit le prototype** (persona fixe) et ne construit pas le sélecteur de rôle. ❓ À confirmer avec les cadreurs si le sélecteur de persona est nécessaire pour le tour de test ; si oui, ce sera une itération à part entière (~5 min de codage, un seul écran).
+
+---
+
+## Itération 1 : le squelette publié, avec la liste des demandes de la responsable d'antenne
+
+- **Dans le périmètre** :
+  - `.env.example` et `DEPLOIEMENT.md` à la racine (contrat de déployabilité, point 2 et 8).
+  - L'écran `Mes demandes` (screen-1 du prototype) remplace la page Next.js par défaut : topbar « Mes demandes » / « Antenne Île-de-France · Sophie A. », liste de demandes avec organisme, type, étape, ancienneté — données en dur côté API (pas de saisie encore).
+  - Une route `GET /api/v1/demandes` sur l'API (8081) qui renvoie ces données en dur ; le front les affiche via un appel relatif (`/api/v1/demandes`).
+- **Hors périmètre** : la saisie d'une nouvelle demande, la fiche demande, la vue Pipeline — itérations suivantes.
+- **Critères d'acceptation** :
+  - Étant donné l'application déployée, quand on ouvre `/`, alors on voit la liste des demandes de Sophie A. avec au moins 2 demandes d'exemple (une entreprise, une collectivité).
+  - Étant donné le front, quand il appelle l'API, alors l'appel se fait en chemin relatif (`/api/v1/demandes`), sans URL absolue.
+  - Étant donné l'application déployée, quand on appelle `/health` et `/sante` sur les deux services, alors les deux répondent `200` avec un corps vérifiable.
+- **Hypothèse de l'équipe couverte** : aucune hypothèse formelle fournie (`cadrage/5-hypotheses.md` est vide). L'itération couvre la première « valeur mesurée » du plan de livraison : « une demande peut être saisie et mise à jour sans sortir de l'outil » (partie lecture seule pour l'instant).
+- **Codage estimé** : 10 minutes.
+- **Fichiers prévus** : `.env.example`, `DEPLOIEMENT.md`, `api/src/routes.ts`, `frontend/src/app/page.tsx`, `frontend/src/app/page.module.css`.
+- **Tests unitaires prévus** : 1 à 2, sur `api/src/routes.ts` (la route `/api/v1/demandes` renvoie le bon statut et la forme attendue).
+- **Étapes ajoutées à la démo** (`e2e/demo.spec.ts`) : ouvrir l'application, vérifier que la liste des demandes s'affiche.
+- **Bilan** : _à remplir en fin d'itération._
+
+## Itération 2 : saisir une nouvelle demande
+
+- **Dans le périmètre** : l'écran `Saisir une demande` (screen-2) : formulaire organisme (existant ou nouveau + type : collectivité/entreprise/école/association), contact, origine, participants annoncés, notes. À la validation, la demande est ajoutée à la liste de l'itération 1, à l'étape « Nouvelle demande », avec Sophie A. comme référente.
+- **Hors périmètre** : faire avancer l'étape depuis la fiche (itération 3), la persistance en base (les données restent en mémoire côté API — à noter comme fragile dans `DEPLOIEMENT.md`).
+- **Critères d'acceptation** :
+  - Étant donné la liste des demandes, quand on clique sur « + Nouvelle » et qu'on remplit le formulaire, alors la demande apparaît dans la liste à l'étape « Nouvelle demande ».
+  - Étant donné un organisme de type collectivité, quand la demande est créée, alors son statut de devis est directement « Sans objet ».
+  - Étant donné un champ obligatoire vide (organisme, type, contact), quand on valide, alors le formulaire signale l'erreur sans créer de demande.
+- **Hypothèse de l'équipe couverte** : aucune hypothèse formelle fournie ; couvre la valeur mesurée « une demande peut être saisie [...] sans sortir de l'outil ».
+- **Codage estimé** : 10 minutes.
+- **Fichiers prévus** : `api/src/routes.ts` (POST `/api/v1/demandes`), un nouveau fichier de page/route front pour le formulaire, `frontend/src/app/page.tsx` (lien « + Nouvelle »).
+- **Tests unitaires prévus** : 1 à 2, sur la règle « collectivité ⇒ devis Sans objet » et sur la validation des champs obligatoires.
+- **Étapes ajoutées à la démo** : créer une demande entreprise, puis une demande collectivité, vérifier leur apparition dans la liste.
+- **Bilan** : _à remplir en fin d'itération._
+
+## Itération 3 : faire avancer l'étape depuis la fiche demande
+
+- **Dans le périmètre** : l'écran `Fiche demande` (screen-3/4) : ouvrir une demande depuis la liste, faire avancer l'étape (Premier échange → Module proposé, avec choix du module → Devis signé ou commande), mettre à jour le statut du devis (Envoyé / Signé / Sans objet) séparément de l'étape, pour une entreprise.
+- **Hors périmètre** : le bouton « Créer la session » (itération 4), le suivi post-session, la vue Pipeline.
+- **Critères d'acceptation** :
+  - Étant donné une demande à l'étape « Nouvelle demande », quand la responsable la fait avancer jusqu'à « Module proposé », alors le module choisi est visible sur la fiche et dans la liste.
+  - Étant donné une demande entreprise, quand le statut du devis passe à « Signé », alors l'étape de la demande peut passer à « Devis signé » indépendamment du statut devis affiché.
+  - Étant donné une demande collectivité, quand on consulte sa fiche, alors le statut devis reste « Sans objet » et n'est pas modifiable.
+- **Hypothèse de l'équipe couverte** : aucune hypothèse formelle fournie ; couvre la valeur mesurée « une demande peut être [...] mise à jour sans sortir de l'outil ».
+- **Codage estimé** : 10 minutes.
+- **Fichiers prévus** : `api/src/routes.ts` (PATCH `/api/v1/demandes/:id`), nouvelle page/route front pour la fiche demande, lien depuis la liste (`frontend/src/app/page.tsx`).
+- **Tests unitaires prévus** : 1 à 2, sur la transition d'étape et sur l'indépendance étape/statut devis.
+- **Étapes ajoutées à la démo** : ouvrir une demande entreprise depuis la liste, la faire avancer jusqu'à « Devis signé ».
+- **Bilan** : _à remplir en fin d'itération._
+
+---
+
+## À venir (objectifs, à détailler au fil de l'eau)
+
+4. **Créer la session** (screen-5) : bouton sur la fiche demande, une fois le devis signé ou la commande reçue, qui génère une session pré-remplie (organisme, module, antenne, payant/non, financeur, participants prévus), sans ressaisie.
+5. **Suivi post-session** (screen-6) : case à cocher « Facture envoyée » sur la fiche d'une demande entreprise, après la formation.
+6. **Vue Pipeline — direction** (screen-7) : vue en colonnes (une par étape), une carte par demande (organisme, type, module, responsable, ancienneté), filtre par antenne, alerte sur les demandes bloquées depuis plus de 14 jours, lecture seule.
+7. **Stabilisation finale** : quand le temps restant ne permet plus qu'une itération, elle sert à stabiliser ce qui sera montré au pitch (corriger les régressions visibles, vérifier `/health` et `/sante`, rejouer `e2e/demo.spec.ts`), plutôt qu'à ajouter du périmètre.
