@@ -27,7 +27,22 @@
 - **Fichiers prévus** : `.env.example`, `DEPLOIEMENT.md`, `api/src/routes.ts`, `frontend/src/app/page.tsx`, `frontend/src/app/page.module.css`.
 - **Tests unitaires prévus** : 1 à 2, sur `api/src/routes.ts` (la route `/api/v1/demandes` renvoie le bon statut et la forme attendue).
 - **Étapes ajoutées à la démo** (`e2e/demo.spec.ts`) : ouvrir l'application, vérifier que la liste des demandes s'affiche.
-- **Bilan** : _à remplir en fin d'itération._
+- **Bilan** :
+  - Codage déjà fait lors d'une session précédente (`.iterations/1.debut`/`1.fin`), repris ici pour la vérification, la publication et le signalement. Pas de dépassement constaté sur cette reprise.
+  - **Critères satisfaits** : les 3 critères d'acceptation sont remplis — liste des 5 demandes d'exemple visible sur `/`, appel API en chemin relatif (`/api/v1/demandes`), `/health` et `/sante` répondent `200` avec un corps vérifiable sur les deux services (vérifié en local : `curl localhost:8080/{health,sante}` → `ok`, `curl localhost:8081/{health,sante}` → `{"status":"ok"}`).
+  - **Tests** : 3 tests Vitest sur `api/src/routes.ts` (santé, 404, forme de `/api/v1/demandes`). `npm test` passe.
+  - **Contrat de déployabilité** : `./scripts/verifier-deployabilite.sh` → aucune borne, aucune alarme.
+  - **Déploiement** : plateforme core démarrée (elle ne tournait pas en reprise de session), base `team40` créée, images `api`/`frontend` construites et publiées sur `localhost:5000`, déployées via `podman compose -p team40`. Vérifié en local uniquement (voir ci-dessus) : `$URL_PUBLIQUE` reste injoignable depuis la machine par construction — à confirmer par le développeur dans son navigateur.
+  - **Signalé à PM Lab** : `./scripts/signaler-version.sh 1` → version 1 enregistrée (`moteur_avance: false`).
+  - **Démo** : étape ajoutée, mais son exécution locale (`BASE_URL=http://localhost:8080 npx playwright test`) échoue — attendu : la passerelle apisix qui route `/api/*` vers l'API par chemin n'est configurée que pour le domaine public réel, pas pour `localhost:8080` depuis la machine ; les appels directs à chaque service (8080 et 8081) fonctionnent. À rejouer par le développeur avec `BASE_URL=$URL_PUBLIQUE npm run demo` depuis son poste si souhaité — une démo qui échoue se signale, elle ne bloque pas la publication.
+  - **Rien reporté** sur cette itération.
+  - **Modifications** :
+    - `api/src/routes.ts`, `api/src/server.ts` : route `GET /api/v1/demandes` (données en dur) et `/health`/`/sante` — sert le critère 1 et 3.
+    - `frontend/src/app/page.tsx`, `page.module.css` : écran « Mes demandes » (screen-1), appel relatif à l'API — sert le critère 1 et 2.
+    - `frontend/public/health`, `frontend/public/sante` : routes de santé statiques du front — sert le critère 3.
+    - `.env.example`, `DEPLOIEMENT.md` : contrat de déployabilité, point 2/8 de la DoD.
+    - `podman-compose.yml`, `api/Dockerfile`, `frontend/Dockerfile`, `frontend/nginx.conf` : déploiement sur 8080/8081.
+    - `e2e/demo.spec.ts` : étape « je vois la liste des demandes ».
 
 ## Itération 2 : saisir une nouvelle demande
 
