@@ -2,7 +2,7 @@
 
 - **Plan validé le 2026-11-18** par le développeur.
 - **Source du plan** : proposé par l'agent, à partir de `passation/cadrage/6-plan-de-livraison.md` (le plan de livraison de l'équipe) et du prototype retenu (`passation/prototype/index.html`). L'équipe n'a pas déposé de plan d'itérations dans PM Lab (pas de fichier `cadrage/*iteration*`, pas de clé `iterations` dans `passation.json`).
-- **Temps restant annoncé** : ≥ 90 minutes, demandé le 2026-11-18 à 16:37. Reconfirmé à 40 minutes au début de l'itération 1 (2026-11-18, reprise de session) : la plateforme n'avait pas encore été démarrée, elle est relancée en tâche de fond pendant la vérification de la DoD. Reconfirmé à 40 minutes au début de l'itération 2 (2026-11-18, ~17:37) : plateforme et registre déjà démarrés, donc moins de temps non-codage à prévoir que pour l'itération 1.
+- **Temps restant annoncé** : ≥ 90 minutes, demandé le 2026-11-18 à 16:37. Reconfirmé à 40 minutes au début de l'itération 1 (2026-11-18, reprise de session) : la plateforme n'avait pas encore été démarrée, elle est relancée en tâche de fond pendant la vérification de la DoD. Reconfirmé à 40 minutes au début de l'itération 2 (2026-11-18, ~17:37) : plateforme et registre déjà démarrés, donc moins de temps non-codage à prévoir que pour l'itération 1. Reconfirmé à 40 minutes au début de l'itération 3 (2026-11-18, ~17:45).
 - **Durée d'un tour de test de l'équipe** : 5 minutes.
 - **Capacité d'une itération** : codage (≤10 min) + publication (~5 min) + tour de test (~5 min) ≈ 20 min. Sur ≥90 minutes, le plan ci-dessous tient large (6 itérations détaillées au fil de l'eau ≈ 2h au pire), avec de la marge pour un dépassement ou une itération de stabilisation finale. Le temps restant sera redemandé au début de chaque itération : ce découpage sera révisé s'il se réduit.
 - **Hors périmètre** (repris du PRD, `passation/cadrage/7-prd.md`) : rédaction du devis/facture, déclaration Qualiopi, inscription d'un particulier, noms des participants d'une sensibilisation sur devis, filtres autres que « par antenne » dans la vue Pipeline, connexion/comptes/mots de passe.
@@ -88,13 +88,26 @@
 - **Fichiers prévus** : `api/src/routes.ts` (PATCH `/api/v1/demandes/:id`), nouvelle page/route front pour la fiche demande, lien depuis la liste (`frontend/src/app/page.tsx`).
 - **Tests unitaires prévus** : 1 à 2, sur la transition d'étape et sur l'indépendance étape/statut devis.
 - **Étapes ajoutées à la démo** : ouvrir une demande entreprise depuis la liste, la faire avancer jusqu'à « Devis signé ».
-- **Bilan** : _à remplir en fin d'itération._
+- **Bilan** :
+  - Codage : durée exacte non mesurée (le chrono `.iterations/3.debut` a été écrit alors que le répertoire courant était passé à `frontend/`, le fichier s'est retrouvé au mauvais endroit ; reconstitué a posteriori avant la vérification). Qualitativement, dans le budget de 10 minutes, sans dépassement ni alarme déclenchée.
+  - **Critères satisfaits** : les 3 — vérifié en local via l'API : `PATCH /api/v1/demandes/d3 {etape: "Module proposé", module: "Cluedo"}` ⇒ `200`, module et étape à jour (visibles aussi sur `GET /api/v1/demandes/d3`, donc dans la liste) ; `PATCH /api/v1/demandes/d1 {statutDevis: "signe"}` (sans toucher à l'étape) ⇒ `200`, `statutDevis: "signe"` indépendamment de l'étape ; `PATCH /api/v1/demandes/d2 {statutDevis: "envoye"}` (collectivité) ⇒ `400`, le devis reste `sans_objet` sur `GET`. Front : `/fiche?id=d1` répond `200`, affiche étape/module/statut devis avec le select de statut devis désactivé pour une collectivité.
+  - **Tests** : 3 tests Vitest ajoutés sur `api/src/routes.ts` (PATCH étape+module, PATCH statut devis indépendant de l'étape, rejet PATCH statut devis sur collectivité). 8 tests au total, tous passent (`npm test`).
+  - **Contrat de déployabilité** : `./scripts/verifier-deployabilite.sh` → aucune borne, aucune alarme.
+  - **Déploiement** : images `api`/`frontend` reconstruites (nouvelle route statique `/fiche` générée par Next.js) et publiées sur `localhost:5000`, redéployées via `podman compose -p team40 up -d --force-recreate`. Vérifié en local (8080/8081, voir ci-dessus) ; `$URL_PUBLIQUE` à confirmer par le développeur dans son navigateur (`/health`, `/sante`).
+  - **Signalé à PM Lab** : `./scripts/signaler-version.sh 3` → version 3 enregistrée (`moteur_avance: false`).
+  - **Démo** : étape « J'ouvre une demande entreprise et je la fais avancer jusqu'à Devis signé » ajoutée. Non rejouée avec succès depuis la machine, pour la même raison structurelle qu'en itérations 1 et 2 (l'exécution s'arrête dès l'étape « liste des demandes », qui dépend déjà de `/api/v1/demandes` non routé en local) — à rejouer par le développeur avec `BASE_URL=$URL_PUBLIQUE npm run demo`.
+  - **Rien reporté** sur les critères d'acceptation de cette itération.
+  - **Modifications** :
+    - `api/src/routes.ts` : `ETAPES`, `ModificationDemande`, `modifierDemande()`, route `PATCH /api/v1/demandes/:id` et `GET /api/v1/demandes/:id` — sert les 3 critères.
+    - `frontend/src/app/fiche/page.tsx` : nouvel écran fiche demande (screen-3/4), lecture via `GET`, mise à jour via `PATCH`, statut devis désactivé pour une collectivité — sert les 3 critères.
+    - `frontend/src/app/page.tsx` : lignes de la liste cliquables, ouvrent `/fiche?id=...` — sert le critère 1 (navigation vers la fiche).
+    - `e2e/demo.spec.ts` : étape « j'ouvre une demande et je la fais avancer jusqu'à Devis signé ».
 
 ---
 
 ## À venir (objectifs, à détailler au fil de l'eau)
 
-4. **Créer la session** (screen-5) : bouton sur la fiche demande, une fois le devis signé ou la commande reçue, qui génère une session pré-remplie (organisme, module, antenne, payant/non, financeur, participants prévus), sans ressaisie.
+4. **Créer la session** (screen-5) : bouton sur la fiche demande, visible une fois l'étape « Devis signé / Commande » atteinte (ou directement pour une collectivité, dont le devis est toujours « sans objet »), qui génère une session pré-remplie (organisme, module, antenne, payant/non, financeur, participants prévus) sans ressaisie, et fait passer la demande à l'étape « Session créée » (groupe `session_creee`, déjà prévu côté données). Pas de nouvel écran de confirmation : la fiche affiche l'état « session créée ». Fichiers prévus : `api/src/routes.ts` (règle de transition + éventuels champs de session), `frontend/src/app/fiche/page.tsx` (bouton conditionnel). Critères d'acceptation pressentis (à confirmer en DoR) : (1) le bouton n'apparaît que lorsque la demande est prête (devis signé, ou collectivité) ; (2) après création, la demande passe dans la section « Sessions créées » de la liste ; (3) les informations saisies à l'origine (organisme, module, participants) se retrouvent sans ressaisie.
 5. **Suivi post-session** (screen-6) : case à cocher « Facture envoyée » sur la fiche d'une demande entreprise, après la formation.
 6. **Vue Pipeline — direction** (screen-7) : vue en colonnes (une par étape), une carte par demande (organisme, type, module, responsable, ancienneté), filtre par antenne, alerte sur les demandes bloquées depuis plus de 14 jours, lecture seule.
 7. **Stabilisation finale** : quand le temps restant ne permet plus qu'une itération, elle sert à stabiliser ce qui sera montré au pitch (corriger les régressions visibles, vérifier `/health` et `/sante`, rejouer `e2e/demo.spec.ts`), plutôt qu'à ajouter du périmètre.

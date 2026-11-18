@@ -31,11 +31,11 @@ const STATUTS_DEVIS: Record<NonNullable<Demande["statutDevis"]>, string> = {
   sans_objet: "Sans objet",
 };
 
-function DemandRow({ demande }: { demande: Demande }) {
+function DemandRow({ demande, onOuvrir }: { demande: Demande; onOuvrir: (id: string) => void }) {
   const etiquette = ETIQUETTES[demande.typeOrganisme];
   const statut = demande.statutDevis ? ` · ${STATUTS_DEVIS[demande.statutDevis]}` : "";
   return (
-    <div className={styles.demandRow}>
+    <div className={styles.demandRow} onClick={() => onOuvrir(demande.id)} style={{ cursor: "pointer" }}>
       <div>
         <div className={styles.demandRowOrg}>{demande.organisme}</div>
         <div className={styles.demandRowStep}>
@@ -94,7 +94,11 @@ export default function Home() {
                 <div className={styles.sectionTitle}>En cours · {enCours.length} demandes</div>
                 <div className={styles.demandList}>
                   {enCours.map((demande) => (
-                    <DemandRow key={demande.id} demande={demande} />
+                    <DemandRow
+                      key={demande.id}
+                      demande={demande}
+                      onOuvrir={(id) => router.push(`/fiche?id=${id}`)}
+                    />
                   ))}
                 </div>
               </div>
@@ -103,7 +107,11 @@ export default function Home() {
                 <div className={styles.sectionTitle}>Sessions créées · {sessionsCreees.length}</div>
                 <div className={styles.demandList}>
                   {sessionsCreees.map((demande) => (
-                    <DemandRow key={demande.id} demande={demande} />
+                    <DemandRow
+                      key={demande.id}
+                      demande={demande}
+                      onOuvrir={(id) => router.push(`/fiche?id=${id}`)}
+                    />
                   ))}
                 </div>
               </div>

@@ -39,4 +39,30 @@ describe("router", () => {
     const apres = (router("GET", "/api/v1/demandes").corps as { demandes: unknown[] }).demandes.length;
     expect(apres).toBe(avant);
   });
+
+  it("fait avancer l'étape et le module d'une demande jusqu'à « Module proposé »", () => {
+    const reponse = router("PATCH", "/api/v1/demandes/d3", { etape: "Module proposé", module: "Cluedo" });
+    expect(reponse.statut).toBe(200);
+    const corps = reponse.corps as { demande: { etape: string; module: string } };
+    expect(corps.demande.etape).toBe("Module proposé");
+    expect(corps.demande.module).toBe("Cluedo");
+  });
+
+  it("met à jour le statut du devis d'une entreprise indépendamment de l'étape", () => {
+    const reponse = router("PATCH", "/api/v1/demandes/d1", {
+      etape: "Devis signé / Commande",
+      statutDevis: "signe",
+    });
+    expect(reponse.statut).toBe(200);
+    const corps = reponse.corps as { demande: { etape: string; statutDevis: string } };
+    expect(corps.demande.etape).toBe("Devis signé / Commande");
+    expect(corps.demande.statutDevis).toBe("signe");
+  });
+
+  it("refuse de modifier le statut du devis d'une collectivité", () => {
+    const reponse = router("PATCH", "/api/v1/demandes/d2", { statutDevis: "envoye" });
+    expect(reponse.statut).toBe(400);
+    const demande = (router("GET", "/api/v1/demandes/d2").corps as { demande: { statutDevis: string } }).demande;
+    expect(demande.statutDevis).toBe("sans_objet");
+  });
 });

@@ -113,6 +113,43 @@ function creerDemande(corps: NouvelleDemande): Reponse {
   return { statut: 201, corps: { demande } };
 }
 
+export const ETAPES = [
+  "Nouvelle demande",
+  "Premier échange",
+  "Module proposé",
+  "Devis signé / Commande",
+  "Session créée",
+] as const;
+
+export type ModificationDemande = {
+  etape?: string;
+  module?: string;
+  statutDevis?: "envoye" | "signe" | "sans_objet";
+};
+
+function modifierDemande(id: string, corps: ModificationDemande): Reponse {
+  const demande = demandes.find((d) => d.id === id);
+  if (!demande) {
+    return { statut: 404, corps: { erreur: "demande inconnue" } };
+  }
+  if (corps.etape !== undefined) {
+    if (!(ETAPES as readonly string[]).includes(corps.etape)) {
+      return { statut: 400, corps: { erreur: "étape inconnue" } };
+    }
+    demande.etape = corps.etape;
+  }
+  if (corps.module !== undefined) {
+    demande.module = corps.module;
+  }
+  if (corps.statutDevis !== undefined) {
+    if (demande.typeOrganisme === "collectivite") {
+      return { statut: 400, corps: { erreur: "le statut du devis d'une collectivité n'est pas modifiable" } };
+    }
+    demande.statutDevis = corps.statutDevis;
+  }
+  return { statut: 200, corps: { demande } };
+}
+
 export function router(methode: string, url: string, corps?: unknown): Reponse {
   const chemin = new URL(url, "http://api").pathname;
   if (methode === "GET" && (chemin === "/health" || chemin === "/sante")) {
@@ -123,6 +160,14 @@ export function router(methode: string, url: string, corps?: unknown): Reponse {
   }
   if (methode === "POST" && chemin === "/api/v1/demandes") {
     return creerDemande((corps ?? {}) as NouvelleDemande);
+  }
+  const correspondance = chemin.match(/^\/api\/v1\/demandes\/([^/]+)$/);
+  if (methode === "PATCH" && correspondance) {
+    return modifierDemande(correspondance[1], (corps ?? {}) as ModificationDemande);
+  }
+  if (methode === "GET" && correspondance) {
+    const demande = demandes.find((d) => d.id === correspondance[1]);
+    return demande ? { statut: 200, corps: { demande } } : { statut: 404 };
   }
   return { statut: 404 };
 }

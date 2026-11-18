@@ -21,4 +21,11 @@ test("Démo : le cas passant", async ({ page }) => {
     await page.getByRole("button", { name: "Créer la demande" }).click();
     await expect(page.getByText("Lycée Victor Hugo")).toBeVisible();
   });
+
+  await test.step("J'ouvre une demande entreprise et je la fais avancer jusqu'à Devis signé", async () => {
+    await page.getByText("Groupe Renault Trucks").click();
+    await page.getByLabel("Étape").selectOption("Devis signé / Commande");
+    await page.getByLabel("Statut du devis").selectOption("signe");
+    await expect(page.getByLabel("Étape")).toHaveValue("Devis signé / Commande");
+  });
 });
