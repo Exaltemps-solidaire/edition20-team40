@@ -12,4 +12,13 @@ test("Démo : le cas passant", async ({ page }) => {
     await expect(page.getByText("Groupe Renault Trucks")).toBeVisible();
     await expect(page.getByText("Mairie de Montreuil")).toBeVisible();
   });
+
+  await test.step("Je saisis une nouvelle demande", async () => {
+    await page.getByRole("button", { name: "+ Nouvelle" }).click();
+    await page.getByPlaceholder("Nom de l'organisme").fill("Lycée Victor Hugo");
+    await page.getByLabel("Type d'organisme").selectOption("ecole");
+    await page.getByPlaceholder("Nom du contact").fill("Karim Benali");
+    await page.getByRole("button", { name: "Créer la demande" }).click();
+    await expect(page.getByText("Lycée Victor Hugo")).toBeVisible();
+  });
 });

@@ -2,7 +2,7 @@
 
 - **Plan validé le 2026-11-18** par le développeur.
 - **Source du plan** : proposé par l'agent, à partir de `passation/cadrage/6-plan-de-livraison.md` (le plan de livraison de l'équipe) et du prototype retenu (`passation/prototype/index.html`). L'équipe n'a pas déposé de plan d'itérations dans PM Lab (pas de fichier `cadrage/*iteration*`, pas de clé `iterations` dans `passation.json`).
-- **Temps restant annoncé** : ≥ 90 minutes, demandé le 2026-11-18 à 16:37. Reconfirmé à 40 minutes au début de l'itération 1 (2026-11-18, reprise de session) : la plateforme n'avait pas encore été démarrée, elle est relancée en tâche de fond pendant la vérification de la DoD.
+- **Temps restant annoncé** : ≥ 90 minutes, demandé le 2026-11-18 à 16:37. Reconfirmé à 40 minutes au début de l'itération 1 (2026-11-18, reprise de session) : la plateforme n'avait pas encore été démarrée, elle est relancée en tâche de fond pendant la vérification de la DoD. Reconfirmé à 40 minutes au début de l'itération 2 (2026-11-18, ~17:37) : plateforme et registre déjà démarrés, donc moins de temps non-codage à prévoir que pour l'itération 1.
 - **Durée d'un tour de test de l'équipe** : 5 minutes.
 - **Capacité d'une itération** : codage (≤10 min) + publication (~5 min) + tour de test (~5 min) ≈ 20 min. Sur ≥90 minutes, le plan ci-dessous tient large (6 itérations détaillées au fil de l'eau ≈ 2h au pire), avec de la marge pour un dépassement ou une itération de stabilisation finale. Le temps restant sera redemandé au début de chaque itération : ce découpage sera révisé s'il se réduit.
 - **Hors périmètre** (repris du PRD, `passation/cadrage/7-prd.md`) : rédaction du devis/facture, déclaration Qualiopi, inscription d'un particulier, noms des participants d'une sensibilisation sur devis, filtres autres que « par antenne » dans la vue Pipeline, connexion/comptes/mots de passe.
@@ -57,7 +57,23 @@
 - **Fichiers prévus** : `api/src/routes.ts` (POST `/api/v1/demandes`), un nouveau fichier de page/route front pour le formulaire, `frontend/src/app/page.tsx` (lien « + Nouvelle »).
 - **Tests unitaires prévus** : 1 à 2, sur la règle « collectivité ⇒ devis Sans objet » et sur la validation des champs obligatoires.
 - **Étapes ajoutées à la démo** : créer une demande entreprise, puis une demande collectivité, vérifier leur apparition dans la liste.
-- **Bilan** : _à remplir en fin d'itération._
+- **Bilan** :
+  - Codage : 1 minute (plateforme et registre déjà démarrés depuis l'itération 1 ; pas de dépassement).
+  - **Critères satisfaits** : les 3 — vérifié en local via l'API (POST d'une demande collectivité ⇒ `statutDevis: "sans_objet"`, `etape: "Nouvelle demande"` ; POST avec organisme vide ⇒ `400`, la demande n'apparaît pas dans la liste) et le front (`/nouvelle-demande` généré en statique, lien « + Nouvelle » actif, formulaire relié à l'API en chemin relatif).
+  - **Tests** : 2 tests Vitest ajoutés sur `api/src/routes.ts` (collectivité ⇒ devis sans objet ; rejet si organisme/contact manquant, liste inchangée). 5 tests au total, tous passent.
+  - **Contrat de déployabilité** : aucune borne, aucune alarme.
+  - **Déploiement** : images reconstruites et publiées, `podman compose -p team40 up -d --force-recreate`. Vérifié en local (8080/8081) ; `$URL_PUBLIQUE` à confirmer par le développeur.
+  - **Signalé à PM Lab** : version 2 enregistrée.
+  - **Démo** : étape « Je saisis une nouvelle demande » ajoutée. Non rejouée depuis la machine, pour la même raison qu'en itération 1 (passerelle apisix sans route locale pour `/api/*` hors domaine public).
+  - **Incident évité** : une tentative de lancer `node src/server.ts` en local pour un test rapide a échoué en `EADDRINUSE` sur le port 8080 — la variable d'environnement `PORT=8080` de la VM s'applique à tout processus Node lancé ici, y compris hors conteneur. Le conteneur frontend publié sur 8080 n'a pas été affecté (tentative avortée avant bind). Noté pour ne pas reproduire : tester via les conteneurs (build/push/compose), jamais un process Node nu sur cette VM.
+  - **Rien reporté** sur cette itération.
+  - **Modifications** :
+    - `api/src/routes.ts` : `POST /api/v1/demandes` (validation + règle collectivité ⇒ devis sans objet) — sert les 3 critères.
+    - `api/src/server.ts` : lecture du corps JSON des requêtes — sert le critère 1.
+    - `frontend/src/app/nouvelle-demande/page.tsx` : nouvel écran de saisie (screen-2 du prototype) — sert le critère 1.
+    - `frontend/src/app/page.module.css` : styles de formulaire partagés — sert le critère 1.
+    - `frontend/src/app/page.tsx` : lien « + Nouvelle » actif vers `/nouvelle-demande` — sert le critère 1.
+    - `e2e/demo.spec.ts` : étape de saisie.
 
 ## Itération 3 : faire avancer l'étape depuis la fiche demande
 

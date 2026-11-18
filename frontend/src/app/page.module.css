@@ -162,3 +162,66 @@
   color: var(--gris);
   font-size: 14px;
 }
+
+.topbarBack {
+  background: transparent;
+  border: none;
+  color: #fff;
+  font-size: 22px;
+  cursor: pointer;
+  padding: 0 4px;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.formGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.formLabel {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--encre);
+}
+
+.formInput,
+.formSelect,
+.formTextarea {
+  border: 1px solid var(--gris-bordure);
+  border-radius: 8px;
+  padding: 10px 12px;
+  font-size: 14px;
+  font-family: inherit;
+}
+
+.formTextarea {
+  resize: vertical;
+  min-height: 72px;
+}
+
+.formHint {
+  font-size: 12px;
+  color: var(--gris);
+}
+
+.formErreur {
+  font-size: 13px;
+  color: var(--rouge);
+}
+
+.btnPrimary {
+  background: var(--bleu);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 12px;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+}

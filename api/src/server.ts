@@ -6,12 +6,26 @@ import { router } from "./routes.ts";
 const port = Number(process.env.PORT ?? 8081);
 
 const serveur = createServer((req, res) => {
-  const { statut, corps } = router(req.method ?? "GET", req.url ?? "/");
-  if (corps === undefined) {
-    res.writeHead(statut).end();
-  } else {
-    res.writeHead(statut, { "Content-Type": "application/json" }).end(JSON.stringify(corps));
-  }
+  const morceaux: Buffer[] = [];
+  req.on("data", (morceau) => morceaux.push(morceau));
+  req.on("end", () => {
+    let corpsRequete: unknown;
+    const brut = Buffer.concat(morceaux).toString("utf-8");
+    if (brut) {
+      try {
+        corpsRequete = JSON.parse(brut);
+      } catch {
+        res.writeHead(400, { "Content-Type": "application/json" }).end(JSON.stringify({ erreur: "JSON invalide" }));
+        return;
+      }
+    }
+    const { statut, corps } = router(req.method ?? "GET", req.url ?? "/", corpsRequete);
+    if (corps === undefined) {
+      res.writeHead(statut).end();
+    } else {
+      res.writeHead(statut, { "Content-Type": "application/json" }).end(JSON.stringify(corps));
+    }
+  });
 });
 
 serveur.listen(port, () => console.log(`api : à l'écoute sur le port ${port}`));

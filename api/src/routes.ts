@@ -78,13 +78,51 @@ export const demandes: Demande[] = [
   },
 ];
 
-export function router(methode: string, url: string): Reponse {
+export type NouvelleDemande = {
+  organisme?: string;
+  typeOrganisme?: TypeOrganisme;
+  contact?: string;
+  origine?: string;
+  participants?: number;
+  notes?: string;
+};
+
+const TYPES_ORGANISME: TypeOrganisme[] = ["entreprise", "collectivite", "ecole", "association"];
+
+function creerDemande(corps: NouvelleDemande): Reponse {
+  if (
+    !corps.organisme?.trim() ||
+    !corps.contact?.trim() ||
+    !corps.typeOrganisme ||
+    !TYPES_ORGANISME.includes(corps.typeOrganisme)
+  ) {
+    return { statut: 400, corps: { erreur: "organisme, type d'organisme et contact sont obligatoires" } };
+  }
+  const demande: Demande = {
+    id: `d${demandes.length + 1}`,
+    organisme: corps.organisme.trim(),
+    typeOrganisme: corps.typeOrganisme,
+    etape: "Nouvelle demande",
+    module: "Module à définir",
+    participants: corps.participants ?? 0,
+    anciennete: "aujourd'hui",
+    statutDevis: corps.typeOrganisme === "collectivite" ? "sans_objet" : null,
+    groupe: "en_cours",
+  };
+  demandes.push(demande);
+  return { statut: 201, corps: { demande } };
+}
+
+export function router(methode: string, url: string, corps?: unknown): Reponse {
   const chemin = new URL(url, "http://api").pathname;
   if (methode === "GET" && (chemin === "/health" || chemin === "/sante")) {
     return { statut: 200, corps: { status: "ok" } };
   }
   if (methode === "GET" && chemin === "/api/v1/demandes") {
     return { statut: 200, corps: { demandes } };
+  }
+  if (methode === "POST" && chemin === "/api/v1/demandes") {
+    return creerDemande((corps ?? {}) as NouvelleDemande);
   }
   return { statut: 404 };
 }

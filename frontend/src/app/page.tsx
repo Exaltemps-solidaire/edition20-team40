@@ -1,5 +1,6 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import styles from "./page.module.css";
 
@@ -53,6 +54,7 @@ function DemandRow({ demande }: { demande: Demande }) {
 }
 
 export default function Home() {
+  const router = useRouter();
   const [demandes, setDemandes] = useState<Demande[] | null>(null);
   const [erreur, setErreur] = useState(false);
 
@@ -77,7 +79,7 @@ export default function Home() {
             <div className={styles.topbarTitle}>Mes demandes</div>
             <span className={styles.topbarSub}>Antenne Île-de-France · Sophie A.</span>
           </div>
-          <button className={styles.topbarAction} type="button" disabled>
+          <button className={styles.topbarAction} type="button" onClick={() => router.push("/nouvelle-demande")}>
             + Nouvelle
           </button>
         </div>
