@@ -1,7 +1,7 @@
 "use client";
 
-import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { Suspense, useEffect, useState } from "react";
 import styles from "../page.module.css";
 
 type TypeOrganisme = "entreprise" | "collectivite" | "ecole" | "association";
@@ -27,11 +27,9 @@ const STATUTS: { valeur: StatutDevis; texte: string }[] = [
   { valeur: "sans_objet", texte: "Sans objet" },
 ];
 
-export default function FicheDemande() {
+function FicheDemande() {
   const router = useRouter();
-  const [id] = useState<string | null>(() =>
-    typeof window === "undefined" ? null : new URLSearchParams(window.location.search).get("id"),
-  );
+  const id = useSearchParams().get("id");
   const [demande, setDemande] = useState<Demande | null>(null);
   const [erreur, setErreur] = useState<string | null>(null);
 
@@ -146,5 +144,21 @@ export default function FicheDemande() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function Page() {
+  return (
+    <Suspense
+      fallback={
+        <div className={styles.page}>
+          <div className={styles.screen}>
+            <p className={styles.etat}>Chargement…</p>
+          </div>
+        </div>
+      }
+    >
+      <FicheDemande />
+    </Suspense>
   );
 }
